@@ -33,7 +33,8 @@ service cloud.firestore {
     }
 
     match /config/{configId} {
-      allow read: if isSignedIn();
+      // Allow anyone to read the configuration so they can see the home image
+      allow read: if true;
       allow write: if isAdmin();
     }
 
