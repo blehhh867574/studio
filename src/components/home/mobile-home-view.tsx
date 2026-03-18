@@ -1,18 +1,25 @@
-
 'use client';
 
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { signOut } from 'firebase/auth';
+import { doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
-import { LogOut, User as UserIcon } from 'lucide-react';
+import { LogOut, User as UserIcon, ShieldAlert } from 'lucide-react';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export function MobileHomeView() {
   const { user } = useUser();
   const auth = useAuth();
+  const db = useFirestore();
   
-  // Use a placeholder that fits a "mobile" context or just a vertical seed
+  const userDocRef = useMemoFirebase(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user?.uid]);
+
+  const { data: userData } = useDoc(userDocRef);
+  const isAdmin = userData?.isAdmin === true;
+
   const mobilePlaceholder = {
     imageUrl: "https://picsum.photos/seed/mobile-app-placeholder/400/800",
     description: "Mobile interface placeholder",
@@ -28,14 +35,14 @@ export function MobileHomeView() {
       {/* Mini Header */}
       <header className="p-4 border-b bg-white flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white overflow-hidden">
             {user?.photoURL ? (
               <Image 
                 src={user.photoURL} 
                 alt="Avatar" 
                 width={32} 
                 height={32} 
-                className="rounded-full"
+                className="rounded-full object-cover"
               />
             ) : (
               <UserIcon size={16} />
@@ -43,10 +50,19 @@ export function MobileHomeView() {
           </div>
           <span className="font-semibold text-sm hidden sm:block">Welcome, {user?.displayName?.split(' ')[0]}</span>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
-          <LogOut className="h-4 w-4 mr-2" />
-          Logout
-        </Button>
+
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button variant="outline" size="sm" className="text-primary border-primary hover:bg-primary/5">
+              <ShieldAlert className="h-4 w-4 mr-2" />
+              Admin Panel
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+        </div>
       </header>
 
       {/* Main Content: Full Screen Mobile Image */}

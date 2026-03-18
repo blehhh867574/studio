@@ -24,6 +24,10 @@
           "description": "A URL pointing to the user's profile picture or avatar image.",
           "format": "uri"
         },
+        "isAdmin": {
+          "type": "boolean",
+          "description": "Flag indicating if the user has administrative privileges."
+        },
         "createdAt": {
           "type": "string",
           "description": "Timestamp indicating when the user's record was first created in the application's database.",
