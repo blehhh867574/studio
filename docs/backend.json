@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the LaunchPad Link application, authenticated via an external system (e.g., Google). This entity stores essential user profile information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity, typically provided by the external authentication system (e.g., Google user ID)."
+        },
+        "email": {
+          "type": "string",
+          "description": "The primary email address of the user, as provided by the authentication system.",
+          "format": "email"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name or full name, suitable for public display."
+        },
+        "profilePictureUrl": {
+          "type": "string",
+          "description": "A URL pointing to the user's profile picture or avatar image.",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the user's record was first created in the application's database.",
+          "format": "date-time"
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "description": "Timestamp indicating the most recent time the user successfully logged into the application.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "createdAt",
+        "lastLoginAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores individual user profile data. The document ID (`userId`) MUST match the Firebase Authentication UID of the respective user. Includes denormalized 'id' field matching the document ID and implicitly 'ownerId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user, corresponding to their Firebase Authentication UID."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure is built around a single root collection, `/users`. Each document within this collection represents a unique user and is identified by their Firebase Authentication UID. This design prioritizes Authorization Independence and robust QAPs (Queryable Access Patterns) as follows: Authorization Independence: Each user document at `/users/{userId}` is self-contained. Access to a specific user's document is determined solely by comparing the document's ID (`userId`) with the authenticated user's UID (`request.auth.uid`). This eliminates the need for `get()` calls in security rules to check parent documents or other related entities, ensuring atomic operations and simplified rule logic. This directly supports the core principle of Authorization Independence as the authorization context (who owns this data) is intrinsically part of the document's path and ID. QAPs (Queryable Access Patterns): By segregating user data into `/users/{userId}` where the document ID matches `request.auth.uid`, we ensure that `get` and `update` operations for a user's own profile are highly efficient and secure. For `list` operations, the structure naturally enforces a clear security posture: listing all documents in the `/users` collection is generally restricted, as it would expose private user data. If a public list of user profiles (e.g., for a directory) were ever required, a separate collection containing only public user fields would be created, or specific fields within the `User` document would be explicitly marked as public via rules, thus adhering to the principle of Structural Segregation by keeping data with different access requirements separate. This ensures rules are not used as filters but rather as enforcers of predetermined access patterns. The `User` entity itself includes essential fields like `createdAt` and `lastLoginAt`, supporting necessary invariants for tracking user activity and data integrity."
+  }
+}
