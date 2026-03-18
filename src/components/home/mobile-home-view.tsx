@@ -5,7 +5,7 @@ import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/fireb
 import { signOut } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
-import { LogOut, User as UserIcon, ShieldAlert, Loader2 } from 'lucide-react';
+import { LogOut, User as UserIcon, ShieldAlert, Loader2, Info } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -36,49 +36,56 @@ export function MobileHomeView() {
 
   return (
     <div className="min-h-screen bg-muted/20 flex flex-col">
-      {/* Mini Header */}
-      <header className="p-4 border-b bg-white flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white overflow-hidden">
+      {/* Header */}
+      <header className="p-4 border-b bg-white flex justify-between items-center sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white overflow-hidden shadow-sm border border-primary/20">
             {user?.photoURL ? (
               <Image 
                 src={user.photoURL} 
                 alt="Avatar" 
-                width={32} 
-                height={32} 
+                width={40} 
+                height={40} 
                 className="rounded-full object-cover"
               />
             ) : (
-              <UserIcon size={16} />
+              <UserIcon size={20} />
             )}
           </div>
-          <span className="font-semibold text-sm hidden sm:block">Welcome, {user?.displayName?.split(' ')[0]}</span>
+          <div className="flex flex-col">
+            <span className="font-bold text-sm leading-none">Welcome, {user?.displayName?.split(' ')[0]}</span>
+            {isUserDataLoading ? (
+              <span className="text-[10px] text-muted-foreground animate-pulse">Checking role...</span>
+            ) : isAdmin ? (
+              <span className="text-[10px] text-primary font-medium flex items-center gap-1">
+                <ShieldAlert className="h-2 w-2" />
+                Administrator
+              </span>
+            ) : (
+              <span className="text-[10px] text-muted-foreground">Standard User</span>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {isUserDataLoading ? (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground px-2">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              Checking role...
-            </div>
-          ) : isAdmin ? (
+          {!isUserDataLoading && isAdmin && (
             <Link href="/admin">
-              <Button variant="outline" size="sm" className="text-primary border-primary hover:bg-primary/5">
-                <ShieldAlert className="h-4 w-4 mr-2" />
+              <Button variant="default" size="sm" className="h-8 text-xs bg-primary hover:bg-primary/90">
+                <ShieldAlert className="h-3 w-3 mr-1.5" />
                 Admin Panel
               </Button>
             </Link>
-          ) : null}
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
-            <LogOut className="h-4 w-4 mr-2" />
+          )}
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="h-8 text-xs text-muted-foreground hover:text-destructive">
+            <LogOut className="h-3 w-3 mr-1.5" />
             Logout
           </Button>
         </div>
       </header>
 
       {/* Main Content: Full Screen Mobile Image */}
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="relative w-full max-w-[400px] aspect-[9/18] bg-white rounded-[3rem] shadow-2xl border-[12px] border-slate-900 overflow-hidden">
+      <main className="flex-1 flex flex-col items-center justify-center p-4">
+        <div className="relative w-full max-w-[400px] aspect-[9/18] bg-white rounded-[3rem] shadow-2xl border-[12px] border-slate-900 overflow-hidden ring-4 ring-primary/5">
           <Image
             src={displayImage}
             alt="Mobile Content"
@@ -88,17 +95,25 @@ export function MobileHomeView() {
             unoptimized={displayImage.includes('ik.imagekit.io')}
           />
           {!configData?.mobileImageUrl && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black/40">
-              <h2 className="text-white text-2xl font-bold font-headline mb-4">Your Mobile Dashboard</h2>
-              <p className="text-white/80 text-sm">
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black/40 backdrop-blur-[2px]">
+              <h2 className="text-white text-2xl font-bold font-headline mb-4 drop-shadow-md">Your Mobile Dashboard</h2>
+              <p className="text-white/80 text-sm mb-6 leading-relaxed">
                 This space is currently ready for your custom app content. 
                 Admins can set a custom image from the panel.
               </p>
+              
               {!isAdmin && !isUserDataLoading && (
-                <div className="mt-6 p-3 bg-white/10 rounded-lg border border-white/20">
-                  <p className="text-[10px] text-white/60 italic">
-                    Note: To access the Admin Panel, set `isAdmin: true` in your user document in Firestore.
+                <div className="mt-4 p-4 bg-white/10 rounded-xl border border-white/20 backdrop-blur-md max-w-[280px]">
+                  <div className="flex items-center justify-center gap-2 text-white/90 font-medium text-xs mb-2">
+                    <Info className="h-3 w-3" />
+                    Admin Debug Info
+                  </div>
+                  <p className="text-[10px] text-white/60 mb-2">
+                    Ensure document <code className="bg-black/30 px-1 py-0.5 rounded">users/{user?.uid}</code> has <code className="text-white">isAdmin: true</code>
                   </p>
+                  <div className="text-[9px] bg-black/40 p-1.5 rounded text-white/40 break-all select-all cursor-help font-mono" title="Click to copy your UID">
+                    {user?.uid}
+                  </div>
                 </div>
               )}
             </div>
