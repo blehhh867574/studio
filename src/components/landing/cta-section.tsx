@@ -3,8 +3,27 @@
 
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
+import { useAuth } from "@/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export function CTASection() {
+  const auth = useAuth();
+  const { toast } = useToast();
+
+  const handleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "Something went wrong during Google sign in.",
+      });
+    }
+  };
+
   return (
     <section className="py-24">
       <div className="container mx-auto px-4">
@@ -18,7 +37,11 @@ export function CTASection() {
               Get started with your Google account in seconds.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold px-10">
+              <Button 
+                size="lg" 
+                className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold px-10"
+                onClick={handleLogin}
+              >
                 <LogIn className="mr-2 h-5 w-5" />
                 Get Started with Google
               </Button>

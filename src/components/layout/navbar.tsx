@@ -1,14 +1,28 @@
 
-"use client";
+'use client';
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LogIn, Rocket } from "lucide-react";
+import { useAuth } from "@/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export function Navbar() {
-  const handleLogin = () => {
-    // Conceptual Google Login trigger
-    console.log("Triggering Google Login flow...");
+  const auth = useAuth();
+  const { toast } = useToast();
+
+  const handleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "Something went wrong during Google sign in.",
+      });
+    }
   };
 
   return (
@@ -30,7 +44,7 @@ export function Navbar() {
           <Link href="#solutions" className="text-sm font-medium hover:text-primary transition-colors">
             Solutions
           </Link>
-          <Link href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
+          <Link href="#" className="text-sm font-medium hover:text-primary transition-colors">
             Pricing
           </Link>
         </div>

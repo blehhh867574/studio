@@ -5,9 +5,27 @@ import { Button } from "@/components/ui/button";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useToast } from "@/hooks/use-toast";
 
 export function Hero() {
   const heroImage = PlaceHolderImages.find(img => img.id === "hero-image");
+  const auth = useAuth();
+  const { toast } = useToast();
+
+  const handleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: error.message || "Something went wrong during Google sign in.",
+      });
+    }
+  };
 
   return (
     <section className="relative overflow-hidden py-20 lg:py-32">
@@ -25,7 +43,7 @@ export function Hero() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-primary text-primary-foreground px-8 font-semibold">
+              <Button size="lg" className="bg-primary text-primary-foreground px-8 font-semibold" onClick={handleLogin}>
                 Start for Free
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>

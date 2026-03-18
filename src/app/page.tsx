@@ -1,17 +1,53 @@
 
+'use client';
+
+import { useEffect } from 'react';
+import { useUser, useFirestore } from '@/firebase';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Navbar } from "@/components/layout/navbar";
 import { Hero } from "@/components/landing/hero";
 import { Features } from "@/components/landing/features";
 import { CTASection } from "@/components/landing/cta-section";
+import { MobileHomeView } from "@/components/home/mobile-home-view";
 
 export default function Home() {
+  const { user, isUserLoading } = useUser();
+  const db = useFirestore();
+
+  useEffect(() => {
+    if (user && db) {
+      // Sync user data to Firestore
+      const userRef = doc(db, 'users', user.uid);
+      setDoc(userRef, {
+        id: user.uid,
+        email: user.email,
+        displayName: user.displayName,
+        profilePictureUrl: user.photoURL,
+        lastLoginAt: serverTimestamp(),
+        // Only set createdAt if it doesn't exist (handled by merge or specific logic, but here merge is fine for MVP)
+        createdAt: serverTimestamp(), 
+      }, { merge: true });
+    }
+  }, [user, db]);
+
+  if (isUserLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <MobileHomeView />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1">
         <Hero />
         <Features />
-        {/* Placeholder for more sections as needed */}
         <section id="solutions" className="py-24 border-t bg-muted/30">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold text-primary mb-12 font-headline">Built for every industry</h2>
