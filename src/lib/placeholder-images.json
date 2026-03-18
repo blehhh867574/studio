@@ -1,3 +1,28 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-image",
+      "description": "A modern professional workspace with digital tools and a clean desk.",
+      "imageUrl": "https://picsum.photos/seed/launchpad-hero/1200/800",
+      "imageHint": "workspace digital"
+    },
+    {
+      "id": "feature-1",
+      "description": "Conceptual representation of team collaboration.",
+      "imageUrl": "https://picsum.photos/seed/launchpad-collab/600/400",
+      "imageHint": "collaboration team"
+    },
+    {
+      "id": "feature-2",
+      "description": "Abstract data visualization showing growth and speed.",
+      "imageUrl": "https://picsum.photos/seed/launchpad-data/600/400",
+      "imageHint": "data visualization"
+    },
+    {
+      "id": "feature-3",
+      "description": "Secure locking mechanism symbol for trust and safety.",
+      "imageUrl": "https://picsum.photos/seed/launchpad-secure/600/400",
+      "imageHint": "security lock"
+    }
+  ]
 }
