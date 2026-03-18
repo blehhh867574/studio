@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
@@ -44,14 +43,14 @@ export function MobileHomeView() {
       </main>
 
       {/* Integrated Navigation Header Overlay */}
-      {/* Clean, sharp overlay with no blur to prevent image softening at the top */}
-      <header className="absolute top-0 left-0 z-20 w-full pt-10 pb-4 px-6 flex items-center gap-6 bg-gradient-to-b from-black/40 to-transparent">
+      {/* Reduced pt-10 to pt-6 to move buttons higher up */}
+      <header className="absolute top-0 left-0 z-20 w-full pt-6 pb-4 px-6 flex items-center gap-6 bg-gradient-to-b from-black/20 to-transparent">
         {/* INR Wallet Tab */}
         <div className="flex flex-col items-start gap-1">
           <button 
             onClick={() => setActiveTab('inr')}
             className={cn(
-              "font-bold text-[13px] tracking-wide transition-all active:opacity-70",
+              "font-bold text-[12px] tracking-wide transition-all active:opacity-70",
               activeTab === 'inr' ? "text-white" : "text-gray-400 hover:text-gray-200"
             )}
           >
@@ -67,7 +66,7 @@ export function MobileHomeView() {
           <button 
             onClick={() => setActiveTab('futures')}
             className={cn(
-              "font-bold text-[13px] tracking-wide transition-all active:opacity-70",
+              "font-bold text-[12px] tracking-wide transition-all active:opacity-70",
               activeTab === 'futures' ? "text-white" : "text-gray-400 hover:text-gray-200"
             )}
           >
