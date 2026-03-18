@@ -1,11 +1,13 @@
+
 'use client';
 
 import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
-import { LogOut, User as UserIcon, ShieldAlert } from 'lucide-react';
+import { LogOut, User as UserIcon, ShieldAlert, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export function MobileHomeView() {
   const { user } = useUser();
@@ -17,14 +19,16 @@ export function MobileHomeView() {
     return doc(db, 'users', user.uid);
   }, [db, user?.uid]);
 
-  const { data: userData } = useDoc(userDocRef);
-  const isAdmin = userData?.isAdmin === true;
+  const configDocRef = useMemoFirebase(() => {
+    if (!db) return null;
+    return doc(db, 'config', 'general');
+  }, [db]);
 
-  const mobilePlaceholder = {
-    imageUrl: "https://picsum.photos/seed/mobile-app-placeholder/400/800",
-    description: "Mobile interface placeholder",
-    imageHint: "mobile app"
-  };
+  const { data: userData } = useDoc(userDocRef);
+  const { data: configData } = useDoc(configDocRef);
+  
+  const isAdmin = userData?.isAdmin === true;
+  const displayImage = configData?.mobileImageUrl || "https://picsum.photos/seed/mobile-app-placeholder/400/800";
 
   const handleLogout = () => {
     signOut(auth);
@@ -53,10 +57,12 @@ export function MobileHomeView() {
 
         <div className="flex items-center gap-2">
           {isAdmin && (
-            <Button variant="outline" size="sm" className="text-primary border-primary hover:bg-primary/5">
-              <ShieldAlert className="h-4 w-4 mr-2" />
-              Admin Panel
-            </Button>
+            <Link href="/admin">
+              <Button variant="outline" size="sm" className="text-primary border-primary hover:bg-primary/5">
+                <ShieldAlert className="h-4 w-4 mr-2" />
+                Admin Panel
+              </Button>
+            </Link>
           )}
           <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
             <LogOut className="h-4 w-4 mr-2" />
@@ -69,18 +75,22 @@ export function MobileHomeView() {
       <main className="flex-1 flex items-center justify-center p-4">
         <div className="relative w-full max-w-[400px] aspect-[9/18] bg-white rounded-[3rem] shadow-2xl border-[12px] border-slate-900 overflow-hidden">
           <Image
-            src={mobilePlaceholder.imageUrl}
-            alt={mobilePlaceholder.description}
+            src={displayImage}
+            alt="Mobile Content"
             fill
-            className="object-cover opacity-80"
-            data-ai-hint={mobilePlaceholder.imageHint}
+            className="object-cover"
+            priority
+            unoptimized={displayImage.includes('ik.imagekit.io')}
           />
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black/40">
-            <h2 className="text-white text-2xl font-bold font-headline mb-4">Your Mobile Dashboard</h2>
-            <p className="text-white/80 text-sm">
-              This space is currently ready for your custom app content.
-            </p>
-          </div>
+          {!configData?.mobileImageUrl && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-black/40">
+              <h2 className="text-white text-2xl font-bold font-headline mb-4">Your Mobile Dashboard</h2>
+              <p className="text-white/80 text-sm">
+                This space is currently ready for your custom app content. 
+                Admins can set a custom image from the panel.
+              </p>
+            </div>
+          )}
         </div>
       </main>
     </div>

@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -45,6 +46,24 @@
         "createdAt",
         "lastLoginAt"
       ]
+    },
+    "GlobalConfig": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GlobalConfig",
+      "type": "object",
+      "description": "Stores global application settings managed by administrators.",
+      "properties": {
+        "mobileImageUrl": {
+          "type": "string",
+          "description": "The URL of the image to be displayed in the mobile home view.",
+          "format": "uri"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp of the last configuration update.",
+          "format": "date-time"
+        }
+      }
     }
   },
   "auth": {
@@ -62,16 +81,32 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores individual user profile data. The document ID (`userId`) MUST match the Firebase Authentication UID of the respective user. Includes denormalized 'id' field matching the document ID and implicitly 'ownerId' for authorization independence.",
+          "description": "Stores individual user profile data.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user, corresponding to their Firebase Authentication UID."
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/config/{configId}",
+        "definition": {
+          "entityName": "GlobalConfig",
+          "schema": {
+            "$ref": "#/backend/entities/GlobalConfig"
+          },
+          "description": "Stores global application configuration documents.",
+          "params": [
+            {
+              "name": "configId",
+              "description": "The ID of the configuration document (e.g., 'general')."
             }
           ]
         }
       }
     ],
-    "reasoning": "The recommended Firestore structure is built around a single root collection, `/users`. Each document within this collection represents a unique user and is identified by their Firebase Authentication UID. This design prioritizes Authorization Independence and robust QAPs (Queryable Access Patterns) as follows: Authorization Independence: Each user document at `/users/{userId}` is self-contained. Access to a specific user's document is determined solely by comparing the document's ID (`userId`) with the authenticated user's UID (`request.auth.uid`). This eliminates the need for `get()` calls in security rules to check parent documents or other related entities, ensuring atomic operations and simplified rule logic. This directly supports the core principle of Authorization Independence as the authorization context (who owns this data) is intrinsically part of the document's path and ID. QAPs (Queryable Access Patterns): By segregating user data into `/users/{userId}` where the document ID matches `request.auth.uid`, we ensure that `get` and `update` operations for a user's own profile are highly efficient and secure. For `list` operations, the structure naturally enforces a clear security posture: listing all documents in the `/users` collection is generally restricted, as it would expose private user data. If a public list of user profiles (e.g., for a directory) were ever required, a separate collection containing only public user fields would be created, or specific fields within the `User` document would be explicitly marked as public via rules, thus adhering to the principle of Structural Segregation by keeping data with different access requirements separate. This ensures rules are not used as filters but rather as enforcers of predetermined access patterns. The `User` entity itself includes essential fields like `createdAt` and `lastLoginAt`, supporting necessary invariants for tracking user activity and data integrity."
+    "reasoning": "Data is structured to allow granular user profiles and a separate collection for global settings. Users can only access their own profile, while admins can manage the global config which is readable by all users."
   }
 }
