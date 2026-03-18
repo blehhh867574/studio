@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft, ShieldCheck, Image as ImageIcon } from 'lucide-react';
+import { Loader2, ArrowLeft, ShieldCheck, Image as ImageIcon, Rocket } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {
@@ -29,12 +29,14 @@ export default function AdminPage() {
   const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
   const { data: configData, isLoading: isConfigLoading } = useDoc(configDocRef);
 
-  const [imageUrl, setImageUrl] = useState('');
+  const [inrImageUrl, setInrImageUrl] = useState('');
+  const [futuresImageUrl, setFuturesImageUrl] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (configData?.mobileImageUrl) {
-      setImageUrl(configData.mobileImageUrl);
+    if (configData) {
+      setInrImageUrl(configData.mobileImageUrl || '');
+      setFuturesImageUrl(configData.futuresImageUrl || '');
     }
   }, [configData]);
 
@@ -45,13 +47,14 @@ export default function AdminPage() {
     setIsSaving(true);
     try {
       await setDoc(doc(db, 'config', 'general'), {
-        mobileImageUrl: imageUrl,
+        mobileImageUrl: inrImageUrl,
+        futuresImageUrl: futuresImageUrl,
         updatedAt: serverTimestamp(),
       }, { merge: true });
       
       toast({
         title: "Configuration Saved",
-        description: "The mobile home image has been updated successfully.",
+        description: "Dashboard images have been updated successfully.",
       });
     } catch (error: any) {
       toast({
@@ -77,7 +80,7 @@ export default function AdminPage() {
       <div className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
         <ShieldCheck className="h-16 w-16 text-destructive mb-4" />
         <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-        <p className="text-muted-foreground mb-6">You do not have administrative privileges to view this page.</p>
+        <p className="text-muted-foreground mb-6">You do not have administrative privileges.</p>
         <Link href="/">
           <Button variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -98,7 +101,7 @@ export default function AdminPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold font-headline">Admin Control Panel</h1>
+            <h1 className="text-3xl font-bold font-headline">Admin Dashboard</h1>
           </div>
           <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
             <ShieldCheck className="h-4 w-4" />
@@ -106,68 +109,76 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-2">
+        <form onSubmit={handleSave} className="grid gap-8 md:grid-cols-2">
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5" />
-                Mobile View Image
+                INR Wallet Image
               </CardTitle>
               <CardDescription>
-                Provide a URL for the image to be displayed on the mobile dashboard for all users.
+                Main dashboard image for the INR Wallet tab.
               </CardDescription>
             </CardHeader>
-            <form onSubmit={handleSave}>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Image URL (ImageKit, Unsplash, etc.)</label>
-                  <Input 
-                    type="url" 
-                    placeholder="https://ik.imagekit.io/your-id/..." 
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    required
-                  />
-                </div>
-                {imageUrl && (
-                  <div className="mt-4 rounded-lg overflow-hidden border bg-white p-2">
-                    <p className="text-xs text-muted-foreground mb-2">Preview:</p>
-                    <div className="relative aspect-[9/16] max-h-[300px] mx-auto overflow-hidden rounded-md border">
-                      <img 
-                        src={imageUrl} 
-                        alt="Preview" 
-                        className="object-cover w-full h-full"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "https://placehold.co/400x800?text=Invalid+Image+URL";
-                        }}
-                      />
-                    </div>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Image URL</label>
+                <Input 
+                  type="url" 
+                  placeholder="https://ik.imagekit.io/..." 
+                  value={inrImageUrl}
+                  onChange={(e) => setInrImageUrl(e.target.value)}
+                  required
+                />
+              </div>
+              {inrImageUrl && (
+                <div className="mt-4 rounded-lg overflow-hidden border bg-white p-2">
+                  <div className="relative aspect-[9/16] max-h-[200px] mx-auto overflow-hidden rounded-md border">
+                    <img src={inrImageUrl} alt="INR Preview" className="object-cover w-full h-full" />
                   </div>
-                )}
-              </CardContent>
-              <CardFooter>
-                <Button type="submit" className="w-full" disabled={isSaving}>
-                  {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save Configuration
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
-
-          <Card className="shadow-lg bg-primary text-primary-foreground">
-            <CardHeader>
-              <CardTitle>Admin Guidance</CardTitle>
-              <CardDescription className="text-primary-foreground/70">
-                Tips for managing your application view.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4 text-sm">
-              <p>• <strong>Aspect Ratio:</strong> The mobile view works best with 9:16 vertical images.</p>
-              <p>• <strong>Performance:</strong> Using a CDN like ImageKit helps images load instantly for your users.</p>
-              <p>• <strong>Real-time:</strong> Updates are pushed immediately to all connected clients without page reloads.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
-        </div>
+
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-accent">
+                <Rocket className="h-5 w-5" />
+                Futures Wallet Image
+              </CardTitle>
+              <CardDescription>
+                Dashboard image for the Futures Wallet tab.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Image URL</label>
+                <Input 
+                  type="url" 
+                  placeholder="https://ik.imagekit.io/..." 
+                  value={futuresImageUrl}
+                  onChange={(e) => setFuturesImageUrl(e.target.value)}
+                  required
+                />
+              </div>
+              {futuresImageUrl && (
+                <div className="mt-4 rounded-lg overflow-hidden border bg-white p-2">
+                  <div className="relative aspect-[9/16] max-h-[200px] mx-auto overflow-hidden rounded-md border">
+                    <img src={futuresImageUrl} alt="Futures Preview" className="object-cover w-full h-full" />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="md:col-span-2">
+            <Button type="submit" className="w-full h-12 text-lg font-bold" disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+              Update Dashboard Images
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

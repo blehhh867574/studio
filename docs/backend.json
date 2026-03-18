@@ -55,7 +55,12 @@
       "properties": {
         "mobileImageUrl": {
           "type": "string",
-          "description": "The URL of the image to be displayed in the mobile home view.",
+          "description": "The URL of the image to be displayed in the INR Wallet view.",
+          "format": "uri"
+        },
+        "futuresImageUrl": {
+          "type": "string",
+          "description": "The URL of the image to be displayed in the Futures Wallet view.",
           "format": "uri"
         },
         "updatedAt": {
@@ -107,6 +112,6 @@
         }
       }
     ],
-    "reasoning": "Data is structured to allow granular user profiles and a separate collection for global settings. Users can only access their own profile, while admins can manage the global config which is readable by all users."
+    "reasoning": "Data is structured to allow dual images for the dashboard tabs. Users can view config, while admins manage both INR and Futures image URLs."
   }
 }
