@@ -2,8 +2,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useUser, useFirestore } from '@/firebase';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { useUser, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { doc, serverTimestamp } from 'firebase/firestore';
 import { Navbar } from "@/components/layout/navbar";
 import { Hero } from "@/components/landing/hero";
 import { Features } from "@/components/landing/features";
@@ -16,16 +16,15 @@ export default function Home() {
 
   useEffect(() => {
     if (user && db) {
-      // Sync user data to Firestore
+      // Sync user data to Firestore using the non-blocking pattern
       const userRef = doc(db, 'users', user.uid);
-      setDoc(userRef, {
+      setDocumentNonBlocking(userRef, {
         id: user.uid,
         email: user.email,
         displayName: user.displayName,
         profilePictureUrl: user.photoURL,
         lastLoginAt: serverTimestamp(),
-        // Only set createdAt if it doesn't exist (handled by merge or specific logic, but here merge is fine for MVP)
-        createdAt: serverTimestamp(), 
+        // merge: true ensures we don't overwrite isAdmin or createdAt if they exist
       }, { merge: true });
     }
   }, [user, db]);

@@ -5,7 +5,7 @@ import { useAuth, useUser, useFirestore, useDoc, useMemoFirebase } from '@/fireb
 import { signOut } from 'firebase/auth';
 import { doc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
-import { LogOut, User as UserIcon, ShieldAlert, ArrowLeft } from 'lucide-react';
+import { LogOut, User as UserIcon, ShieldAlert, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -24,7 +24,7 @@ export function MobileHomeView() {
     return doc(db, 'config', 'general');
   }, [db]);
 
-  const { data: userData } = useDoc(userDocRef);
+  const { data: userData, isLoading: isUserDataLoading } = useDoc(userDocRef);
   const { data: configData } = useDoc(configDocRef);
   
   const isAdmin = userData?.isAdmin === true;
@@ -56,14 +56,19 @@ export function MobileHomeView() {
         </div>
 
         <div className="flex items-center gap-2">
-          {isAdmin && (
+          {isUserDataLoading ? (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground px-2">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Checking role...
+            </div>
+          ) : isAdmin ? (
             <Link href="/admin">
               <Button variant="outline" size="sm" className="text-primary border-primary hover:bg-primary/5">
                 <ShieldAlert className="h-4 w-4 mr-2" />
                 Admin Panel
               </Button>
             </Link>
-          )}
+          ) : null}
           <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
             <LogOut className="h-4 w-4 mr-2" />
             Logout
@@ -89,6 +94,13 @@ export function MobileHomeView() {
                 This space is currently ready for your custom app content. 
                 Admins can set a custom image from the panel.
               </p>
+              {!isAdmin && !isUserDataLoading && (
+                <div className="mt-6 p-3 bg-white/10 rounded-lg border border-white/20">
+                  <p className="text-[10px] text-white/60 italic">
+                    Note: To access the Admin Panel, set `isAdmin: true` in your user document in Firestore.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
