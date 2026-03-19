@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 /**
  * MobileHomeView displays the primary dashboard image managed by the admin.
  * Features a seamless dual-tab interface for INR and Futures views.
+ * Transition is optimized for speed without fade animations.
  */
 export function MobileHomeView() {
   const db = useFirestore();
@@ -29,28 +30,26 @@ export function MobileHomeView() {
 
   return (
     <div className="relative w-full h-screen h-[100svh] bg-black overflow-hidden select-none">
-      {/* Main Image Layer */}
+      {/* Main Image Layer - Animation removed for "normal speed" instant switching */}
       <main className="absolute inset-0 w-full h-full flex items-center justify-center">
         <Image
-          key={activeTab} // Forces smooth transition/re-render when switching tabs
           src={displayImage}
           alt={`${activeTab} Dashboard`}
           fill
-          className="object-contain transition-opacity duration-500 animate-in fade-in"
+          className="object-contain"
           priority
           unoptimized={displayImage.includes('ik.imagekit.io')}
         />
       </main>
 
-      {/* Integrated Navigation Header Overlay */}
-      {/* Reduced pt-10 to pt-6 to move buttons higher up */}
-      <header className="absolute top-0 left-0 z-20 w-full pt-6 pb-4 px-6 flex items-center gap-6 bg-gradient-to-b from-black/20 to-transparent">
+      {/* Integrated Navigation Header Overlay - Positioned higher up */}
+      <header className="absolute top-0 left-0 z-20 w-full pt-4 pb-4 px-6 flex items-center gap-6 bg-gradient-to-b from-black/10 to-transparent">
         {/* INR Wallet Tab */}
         <div className="flex flex-col items-start gap-1">
           <button 
             onClick={() => setActiveTab('inr')}
             className={cn(
-              "font-bold text-[12px] tracking-wide transition-all active:opacity-70",
+              "font-bold text-[12px] tracking-wide transition-colors active:opacity-70",
               activeTab === 'inr' ? "text-white" : "text-gray-400 hover:text-gray-200"
             )}
           >
@@ -66,7 +65,7 @@ export function MobileHomeView() {
           <button 
             onClick={() => setActiveTab('futures')}
             className={cn(
-              "font-bold text-[12px] tracking-wide transition-all active:opacity-70",
+              "font-bold text-[12px] tracking-wide transition-colors active:opacity-70",
               activeTab === 'futures' ? "text-white" : "text-gray-400 hover:text-gray-200"
             )}
           >
@@ -78,7 +77,7 @@ export function MobileHomeView() {
         </div>
       </header>
       
-      {/* Modern status bar safe area */}
+      {/* Status bar safe area */}
       <div className="absolute top-0 left-0 w-full h-10 bg-transparent z-30 pointer-events-none" />
     </div>
   );
