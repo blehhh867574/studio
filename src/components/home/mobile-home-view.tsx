@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
  * MobileHomeView displays the primary dashboard image managed by the admin.
  * Features a seamless dual-tab interface for INR and Futures views.
  * Transition is optimized for speed without fade animations.
+ * Layout is optimized to avoid status bar overlap on mobile devices.
  */
 export function MobileHomeView() {
   const db = useFirestore();
@@ -30,7 +31,7 @@ export function MobileHomeView() {
 
   return (
     <div className="relative w-full h-screen h-[100svh] bg-black overflow-hidden select-none">
-      {/* Main Image Layer - Animation removed for "normal speed" instant switching */}
+      {/* Main Image Layer - Instant switching */}
       <main className="absolute inset-0 w-full h-full flex items-center justify-center">
         <Image
           src={displayImage}
@@ -42,8 +43,8 @@ export function MobileHomeView() {
         />
       </main>
 
-      {/* Integrated Navigation Header Overlay - Positioned higher up */}
-      <header className="absolute top-0 left-0 z-20 w-full pt-4 pb-4 px-6 flex items-center gap-6 bg-gradient-to-b from-black/10 to-transparent">
+      {/* Integrated Navigation Header Overlay - Increased padding for status bar safety */}
+      <header className="absolute top-0 left-0 z-20 w-full pt-10 pb-6 px-6 flex items-center gap-6 bg-gradient-to-b from-black/20 to-transparent">
         {/* INR Wallet Tab */}
         <div className="flex flex-col items-start gap-1">
           <button 
@@ -77,7 +78,7 @@ export function MobileHomeView() {
         </div>
       </header>
       
-      {/* Status bar safe area */}
+      {/* Visual spacer for hardware status bar area */}
       <div className="absolute top-0 left-0 w-full h-10 bg-transparent z-30 pointer-events-none" />
     </div>
   );
